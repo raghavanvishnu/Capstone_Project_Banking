@@ -1,0 +1,22 @@
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp
+__pycache__/
+.pytest_cache/
+.coverage
+.env
+# Python
+*.pyc
+build/
+dist/
+*.egg-info/
+# Data & artifacts
+data/**
+!data/**/.gitkeep
+models/**
+reports/**/*.html
+reports/**/*.pdf
+# Jupyter
+.ipynb_checkpoints/

@@ -1,0 +1,12 @@
+numpy
+pandas
+scikit-learn
+imbalanced-learn
+matplotlib
+jupyter
+pyarrow
+black
+ruff
+pytest
+joblib
+python-dotenv
