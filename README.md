@@ -1,6 +1,14 @@
 # Fraud Detection Capstone
 
-Reproducible, production-minded scaffold for a fraud detection project.
+Goal: build a reproducible pipeline to detect fraudulent transactions and report model performance.
+
+## Dataset
+Due to size, the dataset is stored externally:  
+**📂 Google Drive:** https://drive.google.com/drive/u/0/folders/1F7Du5Ey0ab9xprD0w_f8-yAbXt_sB8OP  
+*Access:* view-only. Download `dataset.csv` to `data/raw/`.
+
+**Target column:** `<to-fill>`  
+**Positive class (fraud = 1?):** `<to-fill>`
 
 ## Quickstart
 ```bash
