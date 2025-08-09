@@ -35,3 +35,6 @@ make eval     # evaluate and print metrics
 
 ## Secrets
 - Use a local `.env` (not committed). CI secrets via GitHub → Settings → Secrets and variables → Actions.
+
+**Problem statement (PDF):** [open](docs/pdf_problem_statement/Capstone%20Project_Fraud%20Detection%20System%20for%20JPMorgan%20Chase%20-%20Case%20Study.pdf)
+
