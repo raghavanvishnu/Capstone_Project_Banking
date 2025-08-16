@@ -9,6 +9,24 @@ Original file is located at
 #WE LOAD THE DATASET HERE AND #CHECK IT FOR VARIOUS PARAMETERS## EDA AND THEN CLEANING
 """
 
+# === Imports ==================================================================
+
+import os
+import gc
+import textwrap
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Optional: Google Colab support (only used if running in Colab)
+try:
+    from google.colab import files
+except ImportError:
+    files = None
+
+
 # === Cell 1: Setup (run first) ===============================================
 import os, gc, textwrap, numpy as np, pandas as pd
 
