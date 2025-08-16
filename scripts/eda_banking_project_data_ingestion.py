@@ -17,12 +17,12 @@ pd.set_option("display.float_format", lambda x: f"{x:,.4f}")
 print("✅ Libraries loaded.")
 
 
-
 # === Cell 2 (Option A): Load from local upload ================================
 # If your CSV is on your computer, run this cell, pick the file, and use that path below.
 from google.colab import files
-#uploaded = files.upload()
-#csv_path = pd.read_csv("/content/Fraud Detection System for JPMorgan Chase _log.csv")#list(uploaded.keys())[0]
+
+# uploaded = files.upload()
+# csv_path = pd.read_csv("/content/Fraud Detection System for JPMorgan Chase _log.csv")#list(uploaded.keys())[0]
 
 csv_path = "/content/Fraud Detection System for JPMorgan Chase _log.csv"
 print("📄 Using file:", csv_path)
@@ -37,8 +37,17 @@ print("📄 Using file:", csv_path)
 # === Cell 3: Memory-optimized read ===========================================
 # Known columns in this dataset
 usecols = [
-    "step","type","amount","nameOrig","oldbalanceOrg","newbalanceOrig",
-    "nameDest","oldbalanceDest","newbalanceDest","isFraud","isFlaggedFraud"
+    "step",
+    "type",
+    "amount",
+    "nameOrig",
+    "oldbalanceOrg",
+    "newbalanceOrig",
+    "nameDest",
+    "oldbalanceDest",
+    "newbalanceDest",
+    "isFraud",
+    "isFlaggedFraud",
 ]
 
 dtypes = {
@@ -74,17 +83,23 @@ EPS = 1e-6
 # Origin/destination "consistency" deltas (useful for anomaly signals)
 # origin_delta ~ oldbalanceOrg - amount - newbalanceOrig
 # dest_delta   ~ newbalanceDest - oldbalanceDest - amount
-df["origin_delta"] = (df["oldbalanceOrg"] - df["amount"] - df["newbalanceOrig"]).astype("float32")
-df["dest_delta"]   = (df["newbalanceDest"] - df["oldbalanceDest"] - df["amount"]).astype("float32")
+df["origin_delta"] = (df["oldbalanceOrg"] - df["amount"] - df["newbalanceOrig"]).astype(
+    "float32"
+)
+df["dest_delta"] = (df["newbalanceDest"] - df["oldbalanceDest"] - df["amount"]).astype(
+    "float32"
+)
 
 # Ratios / flags that often help
-df["amt_to_oldOrg_ratio"] = (df["amount"] / (df["oldbalanceOrg"].abs() + EPS)).astype("float32")
-df["is_zero_bal_sender"]  = (df["oldbalanceOrg"].abs() < EPS).astype("int8")
-df["is_zero_bal_dest"]    = (df["oldbalanceDest"].abs() < EPS).astype("int8")
+df["amt_to_oldOrg_ratio"] = (df["amount"] / (df["oldbalanceOrg"].abs() + EPS)).astype(
+    "float32"
+)
+df["is_zero_bal_sender"] = (df["oldbalanceOrg"].abs() < EPS).astype("int8")
+df["is_zero_bal_dest"] = (df["oldbalanceDest"].abs() < EPS).astype("int8")
 
 # Absolute error flags (tune thresholds later during modeling)
 df["origin_mismatch_flag"] = (df["origin_delta"].abs() > 1.0).astype("int8")
-df["dest_mismatch_flag"]   = (df["dest_delta"].abs() > 1.0).astype("int8")
+df["dest_mismatch_flag"] = (df["dest_delta"].abs() > 1.0).astype("int8")
 
 print("✅ Feature columns added.")
 df.head(3)
@@ -96,7 +111,7 @@ START_TS = np.datetime64("2024-01-01T00:00:00")
 df["txn_time"] = START_TS + pd.to_timedelta(df["step"].astype(int), unit="h")
 df["txn_time"] = df["txn_time"].astype("datetime64[ns]")
 print("🕒 txn_time created from step (assumes step=hour index).")
-df[["step","txn_time"]].head(3)
+df[["step", "txn_time"]].head(3)
 
 # === Cell 6: Optional — derive a datetime from 'step' ========================
 # 'step' is typically an hour index in this dataset. If you want a concrete timestamp, set a start date.
@@ -105,7 +120,7 @@ START_TS = np.datetime64("2024-01-01T00:00:00")
 df["txn_time"] = START_TS + pd.to_timedelta(df["step"].astype(int), unit="h")
 df["txn_time"] = df["txn_time"].astype("datetime64[ns]")
 print("🕒 txn_time created from step (assumes step=hour index).")
-df[["step","txn_time"]].head(3)
+df[["step", "txn_time"]].head(3)
 
 # === Cell 7: Light integrity checks ==========================================
 summary = {
@@ -133,7 +148,8 @@ df_sample.to_parquet(sample_out, index=False)
 print("💾 Saved sample:", sample_out)
 
 # Free some memory if needed
-del df_sample; gc.collect()
+del df_sample
+gc.collect()
 
 # === Cell 9: Quick report (so you can paste into your doc) ===================
 report = f"""
@@ -216,9 +232,9 @@ import seaborn as sns
 fraud_counts = df["isFraud"].value_counts()
 fraud_percent = df["isFraud"].mean() * 100
 
-plt.figure(figsize=(6,4))
+plt.figure(figsize=(6, 4))
 sns.barplot(x=fraud_counts.index, y=fraud_counts.values, palette="viridis")
-plt.xticks([0,1], ["Legit", "Fraud"])
+plt.xticks([0, 1], ["Legit", "Fraud"])
 plt.ylabel("Count")
 plt.title(f"Fraud vs Legitimate Transactions\n(Fraud rate: {fraud_percent:.2f}%)")
 plt.show()
@@ -227,7 +243,7 @@ plt.show()
 
 # === EDA Step 3: Fraud by Transaction Type ===
 fraud_by_type = df.groupby("type")["isFraud"].mean().sort_values(ascending=False) * 100
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(8, 5))
 sns.barplot(x=fraud_by_type.index, y=fraud_by_type.values, palette="coolwarm")
 plt.ylabel("Fraud Rate (%)")
 plt.title("Fraud Rate by Transaction Type")
@@ -236,15 +252,15 @@ plt.show()
 print(fraud_by_type)
 
 # === EDA Step 4: Amount Distribution ===
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(8, 5))
 sns.boxplot(x="isFraud", y="amount", data=df, showfliers=False, palette="mako")
 plt.yscale("log")
-plt.xticks([0,1], ["Legit", "Fraud"])
+plt.xticks([0, 1], ["Legit", "Fraud"])
 plt.title("Transaction Amounts (Log Scale) - Fraud vs Legit")
 plt.show()
 
 # === EDA Step 5: Balance Behavior ===
-fig, axes = plt.subplots(1, 2, figsize=(12,5))
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 sns.boxplot(x="isFraud", y="origin_delta", data=df, showfliers=False, ax=axes[0])
 axes[0].set_title("Origin Delta - Fraud vs Legit")
 
@@ -254,16 +270,16 @@ plt.show()
 
 # === EDA Step 6: Time-based Fraud Analysis ===
 fraud_time = df.groupby("step")["isFraud"].mean() * 100
-plt.figure(figsize=(10,4))
-plt.plot(fraud_time.index, fraud_time.values, marker='o')
+plt.figure(figsize=(10, 4))
+plt.plot(fraud_time.index, fraud_time.values, marker="o")
 plt.xlabel("Step (Hour Index)")
 plt.ylabel("Fraud Rate (%)")
 plt.title("Fraud Rate over Time")
 plt.show()
 
 # === EDA Step 7: Correlation Heatmap (Numeric Only) ===
-plt.figure(figsize=(10,6))
-corr = df.select_dtypes(include=["float32","int8","int32"]).corr()
+plt.figure(figsize=(10, 6))
+corr = df.select_dtypes(include=["float32", "int8", "int32"]).corr()
 sns.heatmap(corr, annot=False, cmap="coolwarm", center=0)
 plt.title("Correlation Heatmap")
 plt.show()
@@ -278,33 +294,38 @@ plt.show()
 
 # Create a folder for plots & tables
 import os
+
 PLOT_DIR = "plots/EDA"
 TABLE_DIR = "reports/EDA_tables"
 os.makedirs(PLOT_DIR, exist_ok=True)
 os.makedirs(TABLE_DIR, exist_ok=True)
 
+
 # Simple helper to save the current matplotlib figure
 def save_fig(name, dpi=200):
     import matplotlib.pyplot as plt
+
     path = os.path.join(PLOT_DIR, f"{name}.png")
     plt.tight_layout()
     plt.savefig(path, dpi=dpi, bbox_inches="tight")
     print("🖼️ Saved:", path)
 
+
 # Overview tables saved to CSV
 overview = {
     "rows": [len(df)],
     "cols": [df.shape[1]],
-    "fraud_rate": [df["isFraud"].mean()]
+    "fraud_rate": [df["isFraud"].mean()],
 }
 import pandas as pd
+
 pd.DataFrame(overview).to_csv(os.path.join(TABLE_DIR, "overview.csv"), index=False)
 
-df.dtypes.astype(str).reset_index().rename(columns={"index":"column",0:"dtype"}).to_csv(
-    os.path.join(TABLE_DIR, "dtypes.csv"), index=False
-)
+df.dtypes.astype(str).reset_index().rename(
+    columns={"index": "column", 0: "dtype"}
+).to_csv(os.path.join(TABLE_DIR, "dtypes.csv"), index=False)
 
-df.isna().sum().reset_index().rename(columns={"index":"column",0:"missing"}).to_csv(
+df.isna().sum().reset_index().rename(columns={"index": "column", 0: "missing"}).to_csv(
     os.path.join(TABLE_DIR, "missing_values.csv"), index=False
 )
 
@@ -316,17 +337,17 @@ import matplotlib.pyplot as plt
 counts = df["isFraud"].value_counts().sort_index()
 labels = ["Legit (0)", "Fraud (1)"]
 
-plt.figure(figsize=(6,4))
+plt.figure(figsize=(6, 4))
 plt.bar(labels, counts.values)
 plt.title(f"Fraud vs Legit (Fraud rate: {df['isFraud'].mean()*100:.2f}%)")
 plt.ylabel("Count")
 save_fig("01_fraud_distribution")
 plt.show()
 
-fraud_by_type = df.groupby("type")["isFraud"].mean().sort_values(ascending=False)*100
+fraud_by_type = df.groupby("type")["isFraud"].mean().sort_values(ascending=False) * 100
 fraud_by_type.to_csv(os.path.join(TABLE_DIR, "fraud_rate_by_type.csv"))
 
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(8, 5))
 plt.bar(fraud_by_type.index.astype(str), fraud_by_type.values)
 plt.xticks(rotation=30, ha="right")
 plt.ylabel("Fraud Rate (%)")
@@ -337,39 +358,53 @@ plt.show()
 # Boxplot via matplotlib (no seaborn)
 import numpy as np
 
-data_legit = df.loc[df["isFraud"]==0, "amount"].clip(lower=0.01)
-data_fraud = df.loc[df["isFraud"]==1, "amount"].clip(lower=0.01)
+data_legit = df.loc[df["isFraud"] == 0, "amount"].clip(lower=0.01)
+data_fraud = df.loc[df["isFraud"] == 1, "amount"].clip(lower=0.01)
 
-plt.figure(figsize=(8,5))
-plt.boxplot([np.log10(data_legit), np.log10(data_fraud)], labels=["Legit", "Fraud"], showfliers=False)
+plt.figure(figsize=(8, 5))
+plt.boxplot(
+    [np.log10(data_legit), np.log10(data_fraud)],
+    labels=["Legit", "Fraud"],
+    showfliers=False,
+)
 plt.ylabel("log10(Amount)")
 plt.title("Transaction Amounts (Log Scale) – Fraud vs Legit")
 save_fig("03_amount_boxplot_log")
 plt.show()
 
 # Origin delta
-plt.figure(figsize=(7,4))
-plt.boxplot([df.loc[df["isFraud"]==0, "origin_delta"],
-             df.loc[df["isFraud"]==1, "origin_delta"]],
-            labels=["Legit","Fraud"], showfliers=False)
+plt.figure(figsize=(7, 4))
+plt.boxplot(
+    [
+        df.loc[df["isFraud"] == 0, "origin_delta"],
+        df.loc[df["isFraud"] == 1, "origin_delta"],
+    ],
+    labels=["Legit", "Fraud"],
+    showfliers=False,
+)
 plt.title("Origin Delta – Fraud vs Legit")
 plt.ylabel("origin_delta")
 save_fig("04_origin_delta_box")
 plt.show()
 
 # Destination delta
-plt.figure(figsize=(7,4))
-plt.boxplot([df.loc[df["isFraud"]==0, "dest_delta"],
-             df.loc[df["isFraud"]==1, "dest_delta"]],
-            labels=["Legit","Fraud"], showfliers=False)
+plt.figure(figsize=(7, 4))
+plt.boxplot(
+    [
+        df.loc[df["isFraud"] == 0, "dest_delta"],
+        df.loc[df["isFraud"] == 1, "dest_delta"],
+    ],
+    labels=["Legit", "Fraud"],
+    showfliers=False,
+)
 plt.title("Destination Delta – Fraud vs Legit")
 plt.ylabel("dest_delta")
 save_fig("05_dest_delta_box")
 plt.show()
 
-fraud_time = df.groupby("step")["isFraud"].mean()*100
+fraud_time = df.groupby("step")["isFraud"].mean() * 100
 
-plt.figure(figsize=(10,4))
+plt.figure(figsize=(10, 4))
 plt.plot(fraud_time.index, fraud_time.values, marker="o", linewidth=1)
 plt.xlabel("step (hour index)")
 plt.ylabel("Fraud Rate (%)")
@@ -380,11 +415,11 @@ plt.show()
 fraud_time.to_csv(os.path.join(TABLE_DIR, "fraud_rate_over_step.csv"))
 
 # Build a simple heatmap with matplotlib (no seaborn)
-num_cols = df.select_dtypes(include=["int8","int32","float32"]).columns
+num_cols = df.select_dtypes(include=["int8", "int32", "float32"]).columns
 corr = df[num_cols].corr().values
 labels = list(num_cols)
 
-plt.figure(figsize=(9,7))
+plt.figure(figsize=(9, 7))
 plt.imshow(corr, interpolation="nearest")
 plt.colorbar()
 plt.title("Correlation Heatmap (numeric)")
@@ -423,17 +458,21 @@ print(findings)
 
 # === Save Helper Block (Reference) ===
 import os
+
 PLOT_DIR = "plots/EDA"
 TABLE_DIR = "reports/EDA_tables"
 os.makedirs(PLOT_DIR, exist_ok=True)
 os.makedirs(TABLE_DIR, exist_ok=True)
 
+
 def save_fig(name, dpi=200):
     import matplotlib.pyplot as plt
+
     path = os.path.join(PLOT_DIR, f"{name}.png")
     plt.tight_layout()
     plt.savefig(path, dpi=dpi, bbox_inches="tight")
     print("🖼️ Saved:", path)
+
 
 """Perfect — now we can turn that into your **report-ready** and **PPT-ready** EDA Step 1 write-up.
 
@@ -483,4 +522,3 @@ These statistics confirm that the dataset is both large and clean, with several 
 
 
 """
-
