@@ -14,7 +14,7 @@ if __name__ == "__main__":
     y = df[args.target]
     X = df.drop(columns=[args.target])
 
-    cat_cols = [c for c in X.columns if X[c].dtype == 'object']
+    cat_cols = [c for c in X.columns if X[c].dtype == "object"]
     num_cols = [c for c in X.columns if c not in cat_cols]
 
     pipe = make_baseline_pipeline(cat_cols, num_cols)

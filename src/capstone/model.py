@@ -6,6 +6,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.linear_model import LogisticRegression
 
+
 def make_baseline_pipeline(cat_cols, num_cols) -> Pipeline:
     pre = ColumnTransformer(
         transformers=[
@@ -16,8 +17,10 @@ def make_baseline_pipeline(cat_cols, num_cols) -> Pipeline:
     clf = LogisticRegression(max_iter=200, class_weight="balanced")
     return Pipeline(steps=[("pre", pre), ("clf", clf)])
 
+
 def save_model(model, path: str):
     joblib.dump(model, path)
+
 
 def load_model(path: str):
     return joblib.load(path)
