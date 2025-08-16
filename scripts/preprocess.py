@@ -17,7 +17,10 @@ if __name__ == "__main__":
 
     # Simple split
     from sklearn.model_selection import train_test_split
-    train_df, test_df = train_test_split(df, test_size=0.2, random_state=42, stratify=df[args.target])
+
+    train_df, test_df = train_test_split(
+        df, test_size=0.2, random_state=42, stratify=df[args.target]
+    )
 
     Path(args.train_out).parent.mkdir(parents=True, exist_ok=True)
     train_df.to_parquet(args.train_out, index=False)
