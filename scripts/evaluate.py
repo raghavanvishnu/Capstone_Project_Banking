@@ -1,5 +1,4 @@
 import argparse
-from pathlib import Path
 import pandas as pd
 from sklearn.metrics import classification_report, roc_auc_score
 from capstone.model import load_model
